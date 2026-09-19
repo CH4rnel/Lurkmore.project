@@ -1,0 +1,94 @@
+# inb4: just_for_lulz
+
+# Python
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+*.manifest
+*.spec
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+
+.venv/
+venv/
+ENV/
+env/
+
+# Testing / Coverage
+
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# Type checking / Linting
+
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+.pyre/
+.pytype/
+
+# Jupyter
+
+.ipynb_checkpoints/
+
+# Environment variables / Secrets
+
+.env
+.env.*
+!.env.example
+
+# Telethon session files (NEVER push credentials)
+
+*.session
+*.session-journal
+
+# Docker volumes / local data
+
+pgdata/
+
+# IDE / Editor
+
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# OS files
+
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Logs
+
+*.log
+logs/
+
+# Local config overrides
+
+*.local
