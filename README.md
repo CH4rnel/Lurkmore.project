@@ -1,4 +1,7 @@
 Readme · MD
+
+<img width="1024" height="768" alt="изображение" src="https://github.com/user-attachments/assets/3adf1ec4-d33d-4d55-a175-624fb72f42e7" />
+
 # Lurkmore.project
  
 > тред не читал, но мнение имею — а теперь у чата будет бот, который читал
