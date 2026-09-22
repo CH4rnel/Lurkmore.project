@@ -19,8 +19,8 @@ def parse_telegram_message(raw_message: dict) -> dict:
         "id": raw_message.get("id"),
         "chat_id": raw_message.get("chat_id"),
         "user_id": raw_message.get("from_id"),
-        "text": raw_message.get("text", ""),
+        "text": raw_message.get("text") or "",
         "reply_to_id": raw_message.get("reply_to_msg_id"),
         "ts": ts,
-        "entities": raw_message.get("entities", [])
+        "entities": raw_message.get("entities") or []
     }
