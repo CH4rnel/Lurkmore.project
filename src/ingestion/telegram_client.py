@@ -1,6 +1,8 @@
 # inb4: just_for_lulz
 
+import os
 from typing import Any
+from telethon import TelegramClient as TelethonClient
 
 
 class TelegramClient:
@@ -12,6 +14,14 @@ class TelegramClient:
             client: Telethon client instance (or mock for testing)
         """
         self.client = client
+    
+    async def connect(self) -> None:
+        """Establishes connection to Telegram."""
+        await self.client.connect()
+    
+    async def disconnect(self) -> None:
+        """Closes connection to Telegram."""
+        await self.client.disconnect()
     
     async def get_chat_history(self, chat_id: int, limit: int = 100) -> list[dict]:
         """
@@ -39,3 +49,18 @@ class TelegramClient:
             })
         
         return parsed_messages
+
+
+def create_telegram_client() -> TelegramClient:
+    """
+    Factory function to create TelegramClient with credentials from environment.
+    
+    Returns:
+        TelegramClient instance configured with API credentials
+    """
+    api_id = int(os.getenv("TELEGRAM_API_ID"))
+    api_hash = os.getenv("TELEGRAM_API_HASH")
+    session_name = os.getenv("TELEGRAM_SESSION_NAME", "lurkmore_session")
+    
+    client = TelethonClient(session_name, api_id, api_hash)
+    return TelegramClient(client)
