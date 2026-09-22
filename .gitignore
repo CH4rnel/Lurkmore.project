@@ -1,7 +1,6 @@
 # inb4: just_for_lulz
 
 # Python
-
 __pycache__/
 *.py[cod]
 *$py.class
@@ -17,14 +16,12 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 # Virtual environments
-
 .venv/
 venv/
 ENV/
 env/
 
 # Testing / Coverage
-
 .pytest_cache/
 .coverage
 .coverage.*
@@ -37,7 +34,6 @@ coverage.xml
 .hypothesis/
 
 # Type checking / Linting
-
 .mypy_cache/
 .dmypy.json
 dmypy.json
@@ -46,26 +42,21 @@ dmypy.json
 .pytype/
 
 # Jupyter
-
 .ipynb_checkpoints/
 
 # Environment variables / Secrets
-
 .env
 .env.*
 !.env.example
 
 # Telethon session files (NEVER push credentials)
-
 *.session
 *.session-journal
 
 # Docker volumes / local data
-
 pgdata/
 
 # IDE / Editor
-
 .vscode/
 .idea/
 *.swp
@@ -76,7 +67,6 @@ pgdata/
 .settings/
 
 # OS files
-
 .DS_Store
 .DS_Store?
 ._*
@@ -85,10 +75,18 @@ ehthumbs.db
 Desktop.ini
 
 # Logs
-
 *.log
 logs/
 
 # Local config overrides
-
 *.local
+
+# SQLite databases (if used locally)
+*.sqlite3
+*.db
+
+# Python profiling
+*.prof
+
+# uv / pipx caches
+.uv/
