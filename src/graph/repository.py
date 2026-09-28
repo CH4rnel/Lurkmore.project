@@ -1,6 +1,7 @@
 # inb4: just_for_lulz
 
 import asyncpg
+import networkx as nx
 from datetime import datetime
 
 
@@ -18,16 +19,7 @@ class GraphRepository:
         weight: float,
         last_ts: datetime
     ) -> None:
-        """
-        Inserts or updates an edge in the relationship graph.
-        
-        Args:
-            src_user_id: Source user ID (who initiated the interaction)
-            dst_user_id: Destination user ID (who received the interaction)
-            edge_type: Type of edge ('reply', 'mention', 'quote')
-            weight: Edge weight (calculated with exponential decay)
-            last_ts: Timestamp of the latest interaction
-        """
+        """Inserts or updates an edge in the relationship graph."""
         async with self.pool.acquire() as conn:
             await conn.execute(
                 """
@@ -39,3 +31,33 @@ class GraphRepository:
                 """,
                 src_user_id, dst_user_id, edge_type, weight, last_ts
             )
+    
+    async def load_graph(self) -> nx.Graph:
+        """
+        Loads all edges from the database as an undirected NetworkX graph.
+        
+        Returns:
+            NetworkX Graph with nodes (user IDs) and weighted edges
+        """
+        async with self.pool.acquire() as conn:
+            rows = await conn.fetch(
+                "SELECT src_user_id, dst_user_id, weight FROM edges"
+            )
+        
+        graph = nx.Graph()
+        for row in rows:
+            src = row["src_user_id"]
+            dst = row["dst_user_id"]
+            weight = row["weight"]
+            
+            # Add nodes if not present
+            graph.add_node(src)
+            graph.add_node(dst)
+            
+            # For undirected graph, aggregate weights if edge already exists
+            if graph.has_edge(src, dst):
+                graph[src][dst]["weight"] += weight
+            else:
+                graph.add_edge(src, dst, weight=weight)
+        
+        return graph
