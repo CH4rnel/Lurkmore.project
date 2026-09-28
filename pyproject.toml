@@ -12,6 +12,7 @@ dependencies = [
     "pytest-asyncio>=0.23.0",
     "python-dotenv>=1.0.0",
     "networkx>=3.2.0",
+    "mwparserfromhell>=0.6.6",
 ]
 
 [build-system]
