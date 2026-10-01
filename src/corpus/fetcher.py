@@ -3,7 +3,6 @@
 import asyncio
 import logging
 from typing import Any, Optional
-from datetime import datetime, timezone
 
 
 logger = logging.getLogger(__name__)
@@ -12,9 +11,6 @@ logger = logging.getLogger(__name__)
 class MediaWikiFetcher:
     """
     Fetches articles from MediaWiki API with rate limiting and retry logic.
-    
-    Implements MediaWiki Action API with continuation tokens.
-    Implements Rate limiting (~1 req/sec) with exponential backoff on 429/5xx.
     """
     
     def __init__(
@@ -24,13 +20,6 @@ class MediaWikiFetcher:
         rate_limit: float = 1.0,
         max_retries: int = 3
     ):
-        """
-        Args:
-            base_url: MediaWiki base URL (e.g., "https://lurkmore.to")
-            http_client: aiohttp.ClientSession or mock
-            rate_limit: Minimum seconds between requests
-            max_retries: Maximum number of retries on 429/5xx
-        """
         self.base_url = base_url.rstrip("/")
         self.http_client = http_client
         self.rate_limit = rate_limit
@@ -41,22 +30,13 @@ class MediaWikiFetcher:
         self,
         continue_token: Optional[str] = None
     ) -> tuple[list[dict], Optional[str]]:
-        """
-        Fetches a batch of articles from MediaWiki API.
-        
-        Args:
-            continue_token: Continuation token from previous batch (None for first batch)
-        
-        Returns:
-            Tuple of (list of article dicts, next continuation token or None)
-        """
+        """Fetches a batch of articles from MediaWiki API."""
         # Rate limiting
         current_time = asyncio.get_event_loop().time()
         time_since_last = current_time - self._last_request_time
         if time_since_last < self.rate_limit:
             await asyncio.sleep(self.rate_limit - time_since_last)
         
-        # Build API URL
         params = {
             "action": "query",
             "list": "allpages",
@@ -69,7 +49,6 @@ class MediaWikiFetcher:
         
         url = f"{self.base_url}/w/api.php"
         
-        # Retry logic with exponential backoff
         for attempt in range(self.max_retries):
             try:
                 async with self.http_client.get(url, params=params) as response:
@@ -77,11 +56,7 @@ class MediaWikiFetcher:
                     
                     if response.status == 200:
                         data = await response.json()
-                        
-                        # Extract articles
                         articles = data.get("query", {}).get("allpages", [])
-                        
-                        # Extract continuation token
                         continue_data = data.get("continue", {})
                         next_token = continue_data.get("apcontinue")
                         
@@ -89,21 +64,18 @@ class MediaWikiFetcher:
                         return articles, next_token
                     
                     elif response.status == 429:
-                        # Rate limited
                         retry_after = int(response.headers.get("Retry-After", 2 ** attempt))
                         logger.warning(f"Rate limited (429), retrying after {retry_after}s")
                         await asyncio.sleep(retry_after)
                         continue
                     
                     elif response.status >= 500:
-                        # Server error
                         retry_delay = 2 ** attempt
                         logger.warning(f"Server error ({response.status}), retrying after {retry_delay}s")
                         await asyncio.sleep(retry_delay)
                         continue
                     
                     else:
-                        # Other error
                         logger.error(f"HTTP error {response.status}")
                         return [], None
             
@@ -116,3 +88,62 @@ class MediaWikiFetcher:
         
         logger.error("Max retries exceeded")
         return [], None
+    
+    async def get_article_content(self, title: str) -> str:
+        """
+        Fetches raw wikitext content for a specific article.
+        
+        Args:
+            title: Article title
+        
+        Returns:
+            Raw wikitext content
+        """
+        # Rate limiting
+        current_time = asyncio.get_event_loop().time()
+        time_since_last = current_time - self._last_request_time
+        if time_since_last < self.rate_limit:
+            await asyncio.sleep(self.rate_limit - time_since_last)
+        
+        params = {
+            "action": "parse",
+            "page": title,
+            "prop": "wikitext",
+            "format": "json"
+        }
+        
+        url = f"{self.base_url}/w/api.php"
+        
+        for attempt in range(self.max_retries):
+            try:
+                async with self.http_client.get(url, params=params) as response:
+                    self._last_request_time = asyncio.get_event_loop().time()
+                    
+                    if response.status == 200:
+                        data = await response.json()
+                        wikitext = data.get("parse", {}).get("wikitext", {}).get("*", "")
+                        return wikitext
+                    
+                    elif response.status == 429:
+                        retry_after = int(response.headers.get("Retry-After", 2 ** attempt))
+                        await asyncio.sleep(retry_after)
+                        continue
+                    
+                    elif response.status >= 500:
+                        retry_delay = 2 ** attempt
+                        await asyncio.sleep(retry_delay)
+                        continue
+                    
+                    else:
+                        logger.error(f"HTTP error {response.status} for article {title}")
+                        return ""
+            
+            except Exception as e:
+                logger.error(f"Request failed for article {title}: {e}")
+                if attempt < self.max_retries - 1:
+                    await asyncio.sleep(2 ** attempt)
+                    continue
+                return ""
+        
+        logger.error(f"Max retries exceeded for article {title}")
+        return ""
