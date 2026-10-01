@@ -1,6 +1,5 @@
 -- inb4: just_for_lulz
 
--- Lurkmore corpus schema
 CREATE TABLE IF NOT EXISTS articles (
     id            SERIAL PRIMARY KEY,
     title         TEXT UNIQUE NOT NULL,
@@ -25,7 +24,8 @@ CREATE TABLE IF NOT EXISTS article_categories (
 CREATE TABLE IF NOT EXISTS links (
     src_id INT REFERENCES articles(id),
     dst_id INT REFERENCES articles(id),
-    anchor TEXT
+    anchor TEXT,
+    PRIMARY KEY (src_id, dst_id, anchor)
 );
 
 CREATE TABLE IF NOT EXISTS templates (
@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS templates (
 CREATE TABLE IF NOT EXISTS article_templates (
     article_id INT REFERENCES articles(id),
     template_id INT REFERENCES templates(id),
-    params JSONB
+    params JSONB,
+    PRIMARY KEY (article_id, template_id)
 );
 
 CREATE TABLE IF NOT EXISTS lexicon (
